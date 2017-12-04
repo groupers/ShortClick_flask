@@ -65,21 +65,17 @@ def add_website():
 
                     Webpage(website_page).create()
                     Website(website_uri).has_webpage(website_page)
-
+                    page_visit(token, website_page)
                     if previous_page != None:
                         # transit_previous
-                        
 
-                        if (diff[0]*60+diff[1]) < 5.0
+                        # if (diff[0]*60+diff[1]) > 3.0:
                         diff = time_diff(previous_page[1], current_ts)
-                        page_visit(token, website_page)
-                        
                         if website_page != previous_page[0] and diff[0] < 3*60:
-                            
                             pages_transit(previous_page[0], website_page, token)
 
                 recommendations  = get_recommendation(token, website_page)[:5]
-                response = json_resp({ "page" : website_page, "recommendations" : recommendations})
+                response = json_resp({ "page" : website_page, "site" : website_uri, "recommendations" : recommendations})
                 # Probably not the right way of doing it... Multiple tabs. Also, when session is killed: onRemoved.
         else:
             response = 'Doesn\'t exist'
