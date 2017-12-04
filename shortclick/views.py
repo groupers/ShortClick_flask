@@ -1,5 +1,6 @@
 from .models import User, Website, Webpage, Ticket, Transit
 from .utils import *
+from .recommender import *
 from flask import Flask, request, session, redirect, url_for, render_template, flash
 import random as rand
 import json
@@ -18,15 +19,15 @@ def new_user_no_ticket():
         resp = 'Not functional'
     return resp
 
-@app.route('/get_suggestion/<token>', methods=['POST'])
-def get_suggestion(token):
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        auth = data["stack"]["auth"]
-        website_uri = data["stack"]["website"][0]
-        website_page = data["stack"]["website"][1]
-        # if User(token).verify_password(auth):
-                        
+# @app.route('/get_suggestion/<token>', methods=['POST'])
+# def get_suggestion(token):
+#     if request.method == 'POST':
+#         data = request.get_json(force=True)
+#         auth = data["stack"]["auth"]
+#         website_uri = data["stack"]["website"][0]
+#         website_page = data["stack"]["website"][1]
+#         if User(token).verify_password(auth):
+
 
 # Conditions
 # Interaction within 3 hours
@@ -41,7 +42,6 @@ def add_website():
     if request.method == 'POST':
         data = request.get_json(force=True)
         token = data["stack"]["token"]
-        # print('token [x] : {0}'.format(token))
         auth = data["stack"]["auth"]
         website_uri = data["stack"]["website"][0]
         website_page = data["stack"]["website"][1]
@@ -52,31 +52,38 @@ def add_website():
             Website(website_uri).create()
             recent_page_visit = get_most_recent_specific_page(token, website_page)
             overload_flag = True
-            if(recent_page_visit != []):
+            if(recent_page_visit != [] and recent_page_visit != None):
                 time_dif = time_diff(recent_page_visit[0]['v.timestamp'],current_ts)
-                if(time_dif[0]*60+time_dif[1]) < 2:
+                if(time_dif[0]*60+time_dif[1]) > 2:
                     overload_flag = False
 
-            if (recent_page_visit == [] or not overload_flag):
+            if (recent_page_visit == [] or recent_page_visit == None or not overload_flag):
                 site_visit(token, website_uri)
-                
+        
+                print(get_recommendation(token, website_page))
                 if not website_uri == website_page:
 
                     Webpage(website_page).create()
-                    page_visit(token, website_page)
                     Website(website_uri).has_webpage(website_page)
-                    
-                    if website_page != previous_page[0] and time_diff(previous_page[1], current_ts)[0] < 3*60:
-                        transit = Transit(token, timestamp())
-                        page_from = Webpage(previous_page[0]).exists()
-                        page_to = Webpage(website_page).exists()
-                        transit.create(page_from, page_to)
 
+                    if previous_page != None:
+                        # transit_previous
+                        
 
-            resp = 'Added'
+                        if (diff[0]*60+diff[1]) < 5.0
+                        diff = time_diff(previous_page[1], current_ts)
+                        page_visit(token, website_page)
+                        
+                        if website_page != previous_page[0] and diff[0] < 3*60:
+                            
+                            pages_transit(previous_page[0], website_page, token)
+
+                recommendations  = get_recommendation(token, website_page)[:5]
+                response = json_resp({ "page" : website_page, "recommendations" : recommendations})
+                # Probably not the right way of doing it... Multiple tabs. Also, when session is killed: onRemoved.
         else:
-            resp = 'Doesn\'t exist'
-    return resp
+            response = 'Doesn\'t exist'
+    return response
 
 
 @app.route('/ticket/create', methods=['GET'])

@@ -8,5 +8,6 @@ try:
 	graph.schema.create_uniqueness_constraint("Webpage", "url")
 	graph.schema.create_uniqueness_constraint("Ticket", "token")
 	graph.schema.create_uniqueness_constraint("VISITED")
+	graph.schema.create_uniqueness_constraint("TRANSIT")
 except:
 	"Just ignore schema already created."

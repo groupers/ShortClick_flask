@@ -27,8 +27,7 @@ def timestamp():
 
 def date():
     return datetime.now().strftime('%Y-%m-%d')
-
-
+    
 def site_visit(token, uri):
     graph.run('MATCH (u:User {token: {t}}), (s:Website {uri:{s}}) CREATE (u)-[:VISITED {timestamp: {ts}}]->(s)', t=token, s=uri, ts=timestamp())
 
@@ -36,16 +35,33 @@ def site_visit(token, uri):
 def page_visit(token, url):
     graph.run('MATCH (u:User {token: {t}}), (p:Webpage {url:{p}}) CREATE (u)-[:VISITED_PAGE {timestamp: {ts}}]->(p)', t=token, p=url, ts=timestamp())
 
+def pages_transit(page_from, page_to, token):
+    timestamp = int(datetime.now().timestamp())
+    graph.run('MATCH (pfrom:Webpage {url: {pf}}) WITH pfrom MATCH (pto:Webpage {url:{pt}}) CREATE (pfrom)-[:TRANSIT {timestamp: {ts}, token: {t}}]->(pto)', pf=page_from, pt=page_to, t=token, ts=timestamp)
+
 # MATCH (u:User {id: $userId}), (p:Park {id: $parkId})
 # CREATE (u)-[:VISITED {timestamp: $timestamp}]->(p)
 def get_most_recent_page(token):
+    # If db is empty:
     result = graph.data('MATCH (u:User {token:{a}})-[v:VISITED_PAGE]->'+
-        '(p:Webpage) RETURN p.url, v.timestamp ORDER BY v.timestamp DESC LIMIT 1', a=token)
-    return (result[0]['p.url'],result[0]['v.timestamp'])
+    '(p:Webpage) RETURN p.url, v.timestamp ORDER BY v.timestamp DESC LIMIT 1', a=token)
+    if result == None or result == []:
+        ret = None
+    else:
+        ret = (result[0]['p.url'],result[0]['v.timestamp'])
+    return ret
+    # else:
+    #     ret = (result[0]['p.url'],result[0]['v.timestamp'])
+    # return ret
+
 
 def get_most_recent_specific_page(token, url):
     result = graph.data('MATCH (u:User {token:{a}})-[v:VISITED_PAGE]->'+
         '(p:Webpage {url: {u}}) RETURN v.timestamp ORDER BY v.timestamp DESC LIMIT 1', a=token,u=url)
-    return result
+    if result == None or result == []:
+        ret = None
+    else:
+        ret = result
+    return ret
     # return (result[0]['p.url'],result[0]['v.timestamp'])
     # return result[0]['v.timestamp']

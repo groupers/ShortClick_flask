@@ -76,10 +76,7 @@ class Transit:
         self.user_token = user_token
 
     def create(self, webpage_from, webpage_to):
-        transit = Relationship(webpage_from, 'TRANSIT', webpage_to,
-         timestamp=self.timestamp, token=self.user_token)
-        graph.create(transit)
-
+        pages_transit(webpage_from, webpage_to, self.user_token)
 
 class User:
     def __init__(self, token):
