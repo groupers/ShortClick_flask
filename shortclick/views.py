@@ -19,16 +19,6 @@ def new_user_no_ticket():
         resp = 'Not functional'
     return resp
 
-# @app.route('/get_suggestion/<token>', methods=['POST'])
-# def get_suggestion(token):
-#     if request.method == 'POST':
-#         data = request.get_json(force=True)
-#         auth = data["stack"]["auth"]
-#         website_uri = data["stack"]["website"][0]
-#         website_page = data["stack"]["website"][1]
-#         if User(token).verify_password(auth):
-
-
 # Conditions
 # Interaction within 3 hours
 # 
@@ -49,7 +39,7 @@ def add_website():
             previous_page = get_most_recent_page(token)
             current_ts = timestamp()
 
-            Website(website_uri).create()
+            website = Website(website_uri).create()
             recent_page_visit = get_most_recent_specific_page(token, website_page)
             overload_flag = True
             if(recent_page_visit != [] and recent_page_visit != None):
@@ -57,10 +47,13 @@ def add_website():
                 if(time_dif[0]*60+time_dif[1]) > 2:
                     overload_flag = False
 
-            if (recent_page_visit == [] or recent_page_visit == None or not overload_flag):
+            if (recent_page_visit == [] or recent_page_visit == None or not overload_flag  
+                and (previous_page[0] != website_page or time_in_seconds(previous_page[1],current_ts) > 1)):
+                print('not flagged')
+
                 site_visit(token, website_uri)
         
-                print(get_recommendation(token, website_page))
+                # print(get_recommendation(token, website_page))
                 if not website_uri == website_page:
 
                     Webpage(website_page).create()
@@ -74,8 +67,7 @@ def add_website():
                         if website_page != previous_page[0] and diff[0] < 3*60:
                             timelaps = time_in_seconds(previous_page[1],current_ts)
                             pages_transit(previous_page[0], website_page, token, timelaps)
-
-                recommendations  = get_recommendation(token, website_page)[:5]
+                recommendations  = get_recommendation(token, website_page, website['domain'])[:5]
                 response = json_resp({ "page" : website_page, "site" : website_uri, "recommendations" : recommendations})
                 # Probably not the right way of doing it... Multiple tabs. Also, when session is killed: onRemoved.
         else:
