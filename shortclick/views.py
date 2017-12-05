@@ -72,7 +72,8 @@ def add_website():
                         # if (diff[0]*60+diff[1]) > 3.0:
                         diff = time_diff(previous_page[1], current_ts)
                         if website_page != previous_page[0] and diff[0] < 3*60:
-                            pages_transit(previous_page[0], website_page, token)
+                            timelaps = time_in_seconds(previous_page[1],current_ts)
+                            pages_transit(previous_page[0], website_page, token, timelaps)
 
                 recommendations  = get_recommendation(token, website_page)[:5]
                 response = json_resp({ "page" : website_page, "site" : website_uri, "recommendations" : recommendations})

@@ -13,11 +13,18 @@ def randToken():
     a = '0123456789abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ'
     return "".join([rand.choice(a) for _ in range(30)])
 
+# 
 def time_diff(origin, to):
     b = datetime.fromtimestamp(to)
     a = datetime.fromtimestamp(origin)
     c = b - a 
     return divmod(c.days * 86400 + c.seconds, 60)
+
+def time_in_seconds(origin, to):
+    b = datetime.fromtimestamp(to)
+    a = datetime.fromtimestamp(origin)
+    c = b - a 
+    return c.total_seconds()
 
 def timestamp():
     # epoch = datetime.utcfromtimestamp(0)
@@ -35,9 +42,8 @@ def site_visit(token, uri):
 def page_visit(token, url):
     graph.run('MATCH (u:User {token: {t}}), (p:Webpage {url:{p}}) CREATE (u)-[:VISITED_PAGE {timestamp: {ts}}]->(p)', t=token, p=url, ts=timestamp())
 
-def pages_transit(page_from, page_to, token):
-    timestamp = int(datetime.now().timestamp())
-    graph.run('MATCH (pfrom:Webpage {url: {pf}}) WITH pfrom MATCH (pto:Webpage {url:{pt}}) CREATE (pfrom)-[:TRANSIT {timestamp: {ts}, token: {t}}]->(pto)', pf=page_from, pt=page_to, t=token, ts=timestamp)
+def pages_transit(page_from, page_to, token, timelaps):
+    graph.run('MATCH (pfrom:Webpage {url: {pf}}) WITH pfrom MATCH (pto:Webpage {url:{pt}}) CREATE (pfrom)-[:TRANSIT {timelaps: {tl}, token: {t}}]->(pto)', pf=page_from, pt=page_to, t=token, tl=timelaps)
 
 # MATCH (u:User {id: $userId}), (p:Park {id: $parkId})
 # CREATE (u)-[:VISITED {timestamp: $timestamp}]->(p)

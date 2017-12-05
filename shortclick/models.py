@@ -4,6 +4,7 @@ from .utils import *
 import os
 import uuid
 from .utils import *
+import tldextract
 
 url = "bolt://localhost:7687"
 # username = os.environ.get('NEO4J_USERNAME')
@@ -23,7 +24,9 @@ class Website:
     def create(self):
         w_exist = self.exists()
         if None == w_exist:
-            website = Node('Website', uri=self.uri)
+            extracted = tldextract.extract(self.uri)
+            domain = "{}.{}".format(extracted.domain, extracted.suffix)
+            website = Node('Website', uri=self.uri, domain=domain)
             graph.create(website)
         else:
             website = w_exist
@@ -51,6 +54,9 @@ class Webpage:
 
     def exists(self):
         return graph.find_one('Webpage', 'url', self.url)
+
+    # def get_last_visit_stamp(self):
+    #     return graph.find_one('VISITED_PAGE', url=self.url)
 
 class Ticket:
     def __init__(self, token):
